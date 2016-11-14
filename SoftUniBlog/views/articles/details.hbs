@@ -1,0 +1,24 @@
+<div class="container body-content">
+    <div class="row">
+        <article>
+            <header>
+                <h2>{{title}}</h2>
+            </header>
+            <p>
+                {{content}}
+            </p>
+            <small class="author">
+                {{author.fullName}}
+            </small>
+            <footer>
+                <div class="pull-right">
+                    <a class="btn btn-success btn-xs"
+                       href="/article/edit/{{article.id}}">Edit &raquo;</a>
+                    <a class="btn btn-success btn-xs"
+                       href="/article/edit/{{article.id}}">Delete &raquo;</a>
+                    <a class="bth btn-default btn-xs" href="/">Black &raquo;</a>
+                </div>
+            </footer>
+        </article>
+    </div>
+</div>
