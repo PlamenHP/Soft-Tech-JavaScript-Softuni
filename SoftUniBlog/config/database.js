@@ -1,10 +1,8 @@
-/**
- * Created by user on 13/11/2016.
- */
 const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 
 module.exports = (config) => {
-    mongoose.connect(condig.connectionString);
+    mongoose.connect(config.connectionString);
 
     let database = mongoose.connection;
     database.once('open', (error) => {
@@ -18,3 +16,7 @@ module.exports = (config) => {
 
     require('./../models/User');
 };
+
+
+
+
