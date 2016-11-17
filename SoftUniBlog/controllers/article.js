@@ -36,5 +36,13 @@ module.exports = {
         Article.findById(id).populate('author').then(article => {
             res.render('article/details', article);
         })
-    }
+    },
+
+    editGet: (req, res) => {
+        let id = req.params.id;
+
+        Article.findById(id).then(article => {
+            res.render('article/edit', article)
+        });
+    },
 };
