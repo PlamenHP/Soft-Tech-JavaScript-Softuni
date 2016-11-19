@@ -45,4 +45,22 @@ module.exports = {
             res.render('article/edit', article)
         });
     },
+
+    editPost: (req, res) => {
+        let id = req.params.id;
+
+        let articleArgs = req.body;
+
+        let errorMsg = '';
+        if (!articleArgs.title) {
+            errorMsg = 'article title cannot be empty!';
+        }else if (!articleArgs.content){
+            errorMsg = 'article content cannot be empty!';
+        }else{
+            Article.update({_id:id}, {$set: {title:articleArgs.title, content: articleArgs.content}})
+                .then(updateStatus => {
+                    res.redirect(`/article/details/${id}`);
+                })
+        }
+    }
 };

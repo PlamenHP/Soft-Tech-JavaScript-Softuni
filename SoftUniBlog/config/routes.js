@@ -19,6 +19,6 @@ module.exports = (app) => {
     app.get('/article/details/:id', articleController.details);
 
     app.get('/article/edit/:id', articleController.editGet);
-   // app.post('/article/edit/:id', articleController.editPost);
+    app.post('/article/edit/:id', articleController.editPost);
 };
 
