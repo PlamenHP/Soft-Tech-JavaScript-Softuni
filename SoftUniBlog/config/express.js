@@ -24,12 +24,16 @@ module.exports = (app, config) => {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    app.use((req, res, next) => {
+    app.use((req,res,next)=>{
         if(req.user){
             res.locals.user = req.user;
+            req.user.isInRole('Admin').then(isAdmin=>{
+                res.locals.isAdmin = isAdmin;
+                next();
+            })
+        } else {
+            next();
         }
-
-        next();
     });
 
     // This makes the content in the "public" folder accessible for every user.
