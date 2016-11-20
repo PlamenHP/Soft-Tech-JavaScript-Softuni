@@ -14,6 +14,14 @@ articleSchema.method({
         User.findById(this.author).then(user => {
             user.articles.push(this.id);
             user.save();
+        });
+
+        let Category = mongoose.model('Category');
+        Category.findById(this.category).then(category =>{
+            if (category) {
+                category.articles.push(this.id);
+                category.save();
+            }
         })
     },
 
@@ -25,6 +33,14 @@ articleSchema.method({
                 user.save();
             }
         });
+
+        let Category = mongoose.model('Category');
+        Category.findById(this.category).then(category =>{
+            if (category) {
+                category.articles.remove(this.id);
+                category.save();
+            }
+        })
     }
 });
 
