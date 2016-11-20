@@ -36,21 +36,21 @@ module.exports = {
         let id = req.params.id;
         let editArgs = req.body;
 
-        User.findOne({email: editArgs.emali, _id: {$ne: id}}).then(user => {
+        User.findOne({email: editArgs.email, _id: {$ne: id}}).then(user => {
             let errorMsg = '';
             if (user) {
                 errorMsg = "User already exist wirh that email";
             } else if (!editArgs.email) {
-                errorMsg = 'Enail cannot be null!'
+                errorMsg = 'Email cannot be null!'
             } else if (!editArgs.fullName) {
                 errorMsg = 'Name cannot be null!'
-            } else if (editArgs.password !== editArgs.repeatedPassword) {
+            } else if (editArgs.password !== editArgs.confirmedPassword) {
                 errorMsg = 'Passwords do not match!'
             }
 
             if (errorMsg) {
                 editArgs.error = errorMsg;
-                res.render('admon/user/edit', editArgs);
+                res.render('admin/user/edit', editArgs);
             } else {
                 Role.find({}).then(roles => {
                     if (!editArgs.roles) {
@@ -79,7 +79,7 @@ module.exports = {
                             if (err) {
                                 res.redirect('/')
                             } else {
-                                res.redirect('admin/user/all');
+                                res.redirect('/admin/user/all');
                             }
                         })
                     })
@@ -89,7 +89,7 @@ module.exports = {
     },
 
     deleteGet: (req,res)=>{
-        let id = params.id;
+        let id = req.params.id;
 
         User.findById(id).then(user =>{
             res.render('admin/user/delete', {userToDelete: user})
@@ -97,11 +97,12 @@ module.exports = {
     },
 
     deletePost: (req,res)=>{
-        let id = params.id;
+        let id = req.params.id;
 
-        User.findOneAndRemove({_id:id}).then(user =>{
+        User.findOneAndRemove({_id:id})
+        .then(user =>{
             user.prepareDelete();
-            res.redirect('admin/user/all')
+            res.redirect('/admin/user/all')
         });
     }
 };

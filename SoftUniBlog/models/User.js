@@ -13,7 +13,6 @@ let userSchema = mongoose.Schema(
     }
 );
 
-
 userSchema.method ({
     authenticate: function (password) {
         let inputPasswordHash = encryption.hashPassword(password, this.salt);
@@ -51,8 +50,8 @@ userSchema.method ({
             })
         }
 
-        let Article = mongoose.model1('Article');
-        for (let article of thiis.articles) {
+        let Article = mongoose.model('Article');
+        for (let article of this.articles) {
             Article.findById(article).then(article => {
                 article.prepareDelete();
                 article.remove();
