@@ -40,7 +40,7 @@ module.exports = {
                     User.create(userObject).then(user => {
                         role.users.push(user);
                         role.save(err => {
-                            if (err) {
+                            if(err) {
                                 registerArgs.error = err.message;
                                 res.render('user/register', registerArgs);
                             }
@@ -52,7 +52,7 @@ module.exports = {
                                         return;
                                     }
 
-                                    res.redirect('/')
+                                    res.redirect('/');
                                 })
                             }
                         });
@@ -68,9 +68,8 @@ module.exports = {
 
     loginPost: (req, res) => {
         let loginArgs = req.body;
-
         User.findOne({email: loginArgs.email}).then(user => {
-            if (!user || !user.authenticate(loginArgs.password)) {
+            if (!user ||!user.authenticate(loginArgs.password)) {
                 let errorMsg = 'Either username or password is invalid!';
                 loginArgs.error = errorMsg;
                 res.render('user/login', loginArgs);
@@ -79,8 +78,7 @@ module.exports = {
 
             req.logIn(user, (err) => {
                 if (err) {
-                    console.log(err);
-                    res.redirect('/user/login', {error: err.message});
+                    res.render('/user/login', {error: err.message});
                     return;
                 }
 

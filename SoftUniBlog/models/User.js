@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Role = require('mongoose').model('Role');
+const Role = mongoose.model('Role');
 const encryption = require('./../utilities/encryption');
 
 let userSchema = mongoose.Schema(
@@ -7,13 +7,14 @@ let userSchema = mongoose.Schema(
         email: {type: String, required: true, unique: true},
         passwordHash: {type: String, required: true},
         fullName: {type: String, required: true},
-        articles: [{type: [mongoose.Schema.Types.ObjectId], ref: 'Article'}],
-        roles: [{type: mongoose.Schema.Types.ObjectId, ref: 'Role'}],
+        articles: [{type: mongoose.Schema.Types.ObjectId, ref:'Article'}],
+        roles: [{type: mongoose.Schema.Types.ObjectId, ref:'Role'}],
         salt: {type: String, required: true},
     }
 );
 
-userSchema.method({
+
+userSchema.method ({
     authenticate: function (password) {
         let inputPasswordHash = encryption.hashPassword(password, this.salt);
         let isSamePasswordHash = inputPasswordHash === this.passwordHash;
@@ -22,17 +23,18 @@ userSchema.method({
     },
 
     isAuthor: function (article) {
+        if(!article){
+            return false;
+        }
 
+        let isAuthor = article.author.equals(this.id);
 
-        let author1 = article.author;
-        let author2 = this.id;
-        let isArticleAuthor = author1.equals(author2);
-        return isArticleAuthor;
+        return isAuthor;
     },
 
     isInRole: function (roleName) {
-        return Role.findOne({name: roleName}).then(role => {
-            if (!role) {
+       return Role.findOne({name: roleName}).then(role => {
+            if (!role){
                 return false;
             }
 
@@ -68,11 +70,11 @@ module.exports.seedAdmin = () => {
 
                 User.create(user).then(user => {
                     role.users.push(user.id);
-                    role.save(err => {
-                        if (err) {
+                    role.save(err =>{
+                        if(err) {
                             console.log(err.message);
                         } else {
-                            console.log('Admin seeded successfully')
+                            console.log('Admin seeded successfully!')
                         }
                     });
                 })
@@ -80,5 +82,4 @@ module.exports.seedAdmin = () => {
         }
     })
 };
-
 
