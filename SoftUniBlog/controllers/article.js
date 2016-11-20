@@ -2,7 +2,7 @@ const Article = require('mongoose').model('Article');
 
 module.exports = {
     createGet: (req, res) => {
-        if (!req.isAuthenticated()){
+        if (!req.isAuthenticated()) {
             let returnUrl = '/article/create';
             req.session.returnUrl = returnUrl;
 
@@ -14,7 +14,7 @@ module.exports = {
     },
 
     createPost: (req, res) => {
-        if(!req.isAuthenticated()) {
+        if (!req.isAuthenticated()) {
             let returnUrl = '/article/create';
             req.session.returnUrl = returnUrl;
 
@@ -25,9 +25,9 @@ module.exports = {
         let articleArgs = req.body;
 
         let errorMsg = '';
-        if (!articleArgs.title){
+        if (!articleArgs.title) {
             errorMsg = 'Invalid title!';
-        } else if (!articleArgs.content){
+        } else if (!articleArgs.content) {
             errorMsg = 'Invalid content!';
         }
 
@@ -38,30 +38,24 @@ module.exports = {
 
         articleArgs.author = req.user.id;
         Article.create(articleArgs).then(article => {
-            req.user.articles.push(article.id);
-            req.user.save(err => {
-                if (err){
-                    res.redirect('/', {error : err.message});
-                }else {
-                    res.redirect('/');
-                }
-            });
-        })
+            article.prepareInsert();
+            res.redirect('/');
+        });
     },
 
     details: (req, res) => {
         let id = req.params.id;
 
         Article.findById(id).populate('author').then(article => {
-            if (!req.user){
-                res.render('article/details', { article: article, isUserAuthorized: false});
+            if (!req.user) {
+                res.render('article/details', {article: article, isUserAuthorized: false});
                 return;
             }
 
             req.user.isInRole('Admin').then(isAdmin => {
                 let isUserAuthorized = isAdmin || req.user.isAuthor(article);
 
-                res.render('article/details', { article: article, isUserAuthorized: isUserAuthorized});
+                res.render('article/details', {article: article, isUserAuthorized: isUserAuthorized});
             });
         });
     },
@@ -69,7 +63,7 @@ module.exports = {
     editGet: (req, res) => {
         let id = req.params.id;
 
-        if(!req.isAuthenticated()){
+        if (!req.isAuthenticated()) {
             let returnUrl = `/article/edit/${id}`;
             req.session.returnUrl = returnUrl;
 
@@ -92,7 +86,7 @@ module.exports = {
     editPost: (req, res) => {
         let id = req.params.id;
 
-        if(!req.isAuthenticated()){
+        if (!req.isAuthenticated()) {
             let returnUrl = `/article/edit/${id}`;
             req.session.returnUrl = returnUrl;
 
@@ -103,13 +97,13 @@ module.exports = {
         let articleArgs = req.body;
 
         let errorMsg = '';
-        if (!articleArgs.title){
+        if (!articleArgs.title) {
             errorMsg = 'Article title cannot be empty!';
         } else if (!articleArgs.content) {
             errorMsg = 'Article content cannot be empty!'
         }
 
-        if(errorMsg) {
+        if (errorMsg) {
             res.render('article/edit', {error: errorMsg})
         } else {
             Article.update({_id: id}, {$set: {title: articleArgs.title, content: articleArgs.content}})
@@ -122,7 +116,7 @@ module.exports = {
     deleteGet: (req, res) => {
         let id = req.params.id;
 
-        if(!req.isAuthenticated()){
+        if (!req.isAuthenticated()) {
             let returnUrl = `/article/delete/${id}`;
             req.session.returnUrl = returnUrl;
 
@@ -146,7 +140,7 @@ module.exports = {
     deletePost: (req, res) => {
         let id = req.params.id;
 
-        if(!req.isAuthenticated()){
+        if (!req.isAuthenticated()) {
             let returnUrl = `/article/delete/${id}`;
             req.session.returnUrl = returnUrl;
 
@@ -157,22 +151,8 @@ module.exports = {
         req.user.isInRole('Admin').then(isAdmin => {
             if (isAdmin) {
                 Article.findOneAndRemove({_id: id}).populate('author').then(article => {
-                    let author = article.author;
-
-                    // Index of the article's ID in the author's articles.
-                    let index = author.articles.indexOf(article.id);
-
-                    if(index < 0) {
-                        let errorMsg = 'Article was not found for that author!';
-                        res.render('article/delete', {error: errorMsg})
-                    } else {
-                        // Remove count elements after given index (inclusive).
-                        let count = 1;
-                        author.articles.splice(index, count);
-                        author.save().then((user) => {
-                            res.redirect('/');
-                        });
-                    }
+                    article.prepareDelete();
+                    res.redirect('/');
                 });
             }
             else {

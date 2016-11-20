@@ -86,5 +86,22 @@ module.exports = {
                 });
             }
         })
+    },
+
+    deleteGet: (req,res)=>{
+        let id = params.id;
+
+        User.findById(id).then(user =>{
+            res.render('admin/user/delete', {userToDelete: user})
+        });
+    },
+
+    deletePost: (req,res)=>{
+        let id = params.id;
+
+        User.findOneAndRemove({_id:id}).then(user =>{
+            user.prepareDelete();
+            res.redirect('admin/user/all')
+        });
     }
 };
