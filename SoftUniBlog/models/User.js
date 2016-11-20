@@ -22,13 +22,12 @@ userSchema.method({
     },
 
     isAuthor: function (article) {
-        if (!article) {
-            return false;
-        }
 
-        let isAuthor = article.author.equals(this.id);
 
-        return isAuthor;
+        let author1 = article.author;
+        let author2 = this.id;
+        let isArticleAuthor = author1.equals(author2);
+        return isArticleAuthor;
     },
 
     isInRole: function (roleName) {

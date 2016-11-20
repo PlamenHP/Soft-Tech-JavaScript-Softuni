@@ -11,7 +11,7 @@ module.exports = {
 
         if (!req.isAuthenticated()) {
             errorMsg = 'You should be logged in to make articles!'
-        } else if (!articleArgs.title){
+        } else if (!articleArgs.title) {
             errorMsg = 'Invalid title!';
         } else if (!articleArgs.content) {
             errorMsg = 'Invalid content!';
@@ -23,7 +23,7 @@ module.exports = {
             req.user.save(err => {
                 if (err) {
                     res.redirect('/', {error: err.message});
-                }else {
+                } else {
                     res.redirect('/');
                 }
             });
@@ -34,14 +34,23 @@ module.exports = {
         let id = req.params.id;
 
         Article.findById(id).populate('author').then(article => {
-            res.render('article/details', article);
-        })
+            if (!req.user) {
+                res.render('article/details', {article: article, isUserAuthorized: false});
+                return;
+            }
+
+            req.user.isInRole('Admin').then(isAdmin => {
+                let isUserAuthorized = isAdmin || req.user.isAuthor(article);
+
+                res.render('article/details', {article: article, isUserAuthorized: isUserAuthorized})
+            });
+        });
     },
 
     editGet: (req, res) => {
         let id = req.params.id;
 
-        if(!req.isAuthenticated()){
+        if (!req.isAuthenticated()) {
             let returnUrl = `/article/edit/${id}`;
             req.session.returnUrl = returnUrl;
 
@@ -49,9 +58,9 @@ module.exports = {
             return;
         }
 
-        Article.findById(id).then(article => {
-            req.user.isInRole('Admin').then(isAdmin =>{
-                if (!isAdmin && !req.user.isAuthor(article)){
+        Article.findById(id).populate('author').then(article => {
+            req.user.isInRole('Admin').then(isAdmin => {
+                if (!isAdmin && !req.user.isAuthor(article)) {
                     res.redirect('/');
                     return;
                 }
@@ -66,13 +75,21 @@ module.exports = {
 
         let articleArgs = req.body;
 
+        if (!req.isAuthenticated()) {
+            let returnUrl = `/article/edit/${id}`;
+            req.session.returnUrl = returnUrl;
+
+            res.redirect('/user/login');
+            return;
+        }
+
         let errorMsg = '';
         if (!articleArgs.title) {
             errorMsg = 'article title cannot be empty!';
-        }else if (!articleArgs.content){
+        } else if (!articleArgs.content) {
             errorMsg = 'article content cannot be empty!';
-        }else{
-            Article.update({_id:id}, {$set: {title:articleArgs.title, content: articleArgs.content}})
+        } else {
+            Article.update({_id: id}, {$set: {title: articleArgs.title, content: articleArgs.content}})
                 .then(updateStatus => {
                     res.redirect(`/article/details/${id}`);
                 })
@@ -82,7 +99,7 @@ module.exports = {
     deleteGet: (req, res) => {
         let id = req.params.id;
 
-        if(!req.isAuthenticated()){
+        if (!req.isAuthenticated()) {
             let returnUrl = `/article/edit/${id}`;
             req.session.returnUrl = returnUrl;
 
@@ -90,9 +107,9 @@ module.exports = {
             return;
         }
 
-        Article.findById(id).then(article => {
-            req.user.isInRole('Admin').then(isAdmin =>{
-                if (!isAdmin && !req.user.isAuthor(article)){
+        Article.findById(id).populate('author').then(article => {
+            req.user.isInRole('Admin').then(isAdmin => {
+                if (!isAdmin && !req.user.isAuthor(article)) {
                     res.redirect('/');
                     return;
                 }
@@ -104,21 +121,30 @@ module.exports = {
     deletePost: (req, res) => {
         let id = req.params.id;
 
-        Article.findOneAndRemove({_id:id}).populate('author').then(article => {
+        if (!req.isAuthenticated()) {
+            let returnUrl = `/article/edit/${id}`;
+            req.session.returnUrl = returnUrl;
+
+            res.redirect('/user/login');
+            return;
+        }
+
+        Article.findOneAndRemove({_id: id}).populate('author').then(article => {
+
             let author = article.author;
 
             let index = author.articles.indexOf(article.id);
 
-            if(index<0) {
+            if (index < 0) {
                 let errorMsg = 'Article was not found for that author!';
                 res.render('article/delete', {error: errorMsg})
-            }else {
+            } else {
                 let count = 1;
                 author.articles.splice(index, count);
                 author.save().then((user) => {
                     res.redirect('/');
                 });
             }
-        })
+        });
     }
 };
