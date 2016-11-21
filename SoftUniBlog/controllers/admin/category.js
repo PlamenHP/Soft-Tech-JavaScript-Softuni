@@ -14,12 +14,12 @@ module.exports = {
     createPost: (req, res) => {
         let categoryArgs = req.body;
 
-        if(!categoryArgs.name) {
+        if (!categoryArgs.name) {
             let errorMsg = 'Category name cannot be null!';
             categoryArgs.error = errorMsg;
             res.render('admin/category/create', categoryArgs);
-        }else{
-            Category.create(categoryArgs).then(category =>{
+        } else {
+            Category.create(categoryArgs).then(category => {
                 res.redirect('/admin/category/all');
             })
         }
@@ -37,16 +37,33 @@ module.exports = {
         let id = req.params.id;
         let editArgs = req.body;
 
-        if(!editArgs.name){
+        if (!editArgs.name) {
             let errorMessage = 'Category name cannot be null';
 
             Category.findById(id).then(category => {
                 res.render('admin/category/edit', {category: category, error: errorMessage});
             })
-        }else{
-            Category.findOneAndUpdate({_id:id}, {name: editArgs.name}).then(category => {
+        } else {
+            Category.findOneAndUpdate({_id: id}, {name: editArgs.name}).then(category => {
                 res.redirect('/admin/category/all');
             })
         }
+    },
+
+    deleteGet: (req, res) => {
+        let id = req.params.id;
+
+        Category.findById(id).then(category => {
+            res.render('admin/category/delete', {category: category});
+        });
+    },
+
+    deletePost: (req, res) => {
+        let id = req.params.id;
+
+        Category.findOneAndRemove({_id: id}).then(category => {
+            category.prepareDelete();
+            res.redirect('/admin/category/all');
+        })
     }
 };
