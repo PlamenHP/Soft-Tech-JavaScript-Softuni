@@ -6,10 +6,10 @@ let tagsSchema = mongoose.Schema({
 });
 
 tagsSchema.method({
-    prepareIsert: function () {
+    prepareInsert: function () {
         let Article = mongoose.model('Article');
         for (let article of this.articles) {
-            Article.findBy(article).then(article => {
+            Article.findById(article).then(article => {
                 if (article.tags.indexOf(this.id)=== -1) {
                     article.tags.push(this.id);
                     article.save();
@@ -35,13 +35,13 @@ module.exports.initializeTags = function (newTags, articleId) {
             Tag.findOne({name: newTag}).then(tag => {
                 if (tag) {
                     if(tag.articles.indexOf(articleId) === -1) {
-                        tag.article.push(articleId);
+                        tag.articles.push(articleId);
                         tag.prepareInsert();
                         tag.save();
                     }
                 }else {
                     Tag.create({name: newTag}).then(tag => {
-                        tag.article.push(articleId);
+                        tag.articles.push(articleId);
                         tag.prepareInsert();
                         tag.save();
                     })

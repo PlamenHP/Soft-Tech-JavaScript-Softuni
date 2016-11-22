@@ -5,7 +5,7 @@ let articleSchema = mongoose.Schema({
     content: {type: String, required: true},
     author: {type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User'},
     category: {type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Category'},
-    tags: {type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Tag'},
+    tags: [{type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Tag'}],
     date: {type: Date, default: Date.now()}
 });
 
