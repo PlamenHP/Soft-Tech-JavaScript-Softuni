@@ -28,3 +28,26 @@ tagsSchema.set('versionKey', false);
 const Tag = mongoose.model('Tag', tagsSchema);
 
 module.exports = Tag;
+
+module.exports.initializeTags = function (newTags, articleId) {
+    for (let newTag of newTags) {
+        if (newTag) {
+            Tag.findOne({name: newTag}).then(tag => {
+                if (tag) {
+                    if(tag.articles.indexOf(articleId) === -1) {
+                        rag.article.push(articleId);
+                        tag.prepareInsert();
+                        tag.save();
+                    }
+                }else {
+                    Tag.create({name: newTag}).then(tag => {
+                        tag.article.push(articleId);
+                        tag.prepareInsert();
+                        tag.save();
+                    })
+                }
+
+            });
+        }
+    }
+};
