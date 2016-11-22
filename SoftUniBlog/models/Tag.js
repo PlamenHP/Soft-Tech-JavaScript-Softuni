@@ -35,7 +35,7 @@ module.exports.initializeTags = function (newTags, articleId) {
             Tag.findOne({name: newTag}).then(tag => {
                 if (tag) {
                     if(tag.articles.indexOf(articleId) === -1) {
-                        rag.article.push(articleId);
+                        tag.article.push(articleId);
                         tag.prepareInsert();
                         tag.save();
                     }

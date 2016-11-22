@@ -42,9 +42,10 @@ module.exports = {
 
         articleArgs.author = req.user.id;
         articleArgs.tags = [];
-        Article.create(articleArgs).then(article => {
+        Article.create(articleArgs)
+            .then(article => {
             let tagNames = articleArgs.tagNames.split(/\s+|,/).filter(tag => {return tag});
-            initializeTags(tagNames, article.id);
+            InitializeTags(tagNames, article.id);
 
             article.prepareInsert();
             res.redirect('/');
@@ -147,7 +148,7 @@ module.exports = {
                         console.log(err.message);
                     }
 
-                    Category.findbyId(article.category).then(category => {
+                    Category.findById(article.category).then(category => {
                         if(category.articles.indexOf(article.id) === -1) {
                             category.articles.push(article.id);
                             category.save();
@@ -171,13 +172,14 @@ module.exports = {
             return;
         }
 
-        Article.findById(id).then(article => {
+        Article.findById(id).populate('category tags').then(article => {
             req.user.isInRole('Admin').then(isAdmin => {
                 if (!isAdmin && !req.user.isAuthor(article)) {
                     res.redirect('/');
                     return;
                 }
 
+                article.tagNames = article.tags.map(tag => {return tag.name});
                 res.render('article/delete', article)
             });
         });
