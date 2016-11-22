@@ -79,7 +79,7 @@ module.exports = {
             return;
         }
 
-        Article.findById(id).then(article => {
+        Article.findById(id).populate('tags').then(article => {
             req.user.isInRole('Admin').then(isAdmin => {
                 if (!isAdmin && !req.user.isAuthor(article)) {
                     res.redirect('/');
@@ -89,6 +89,7 @@ module.exports = {
                 Category.find({}).then(categories => {
                     article.categories = categories;
 
+                    article.tagNames = article.tags.map(tag => {return tag.name});
                     res.render('article/edit', article)
                 });
             });
@@ -118,7 +119,7 @@ module.exports = {
         if (errorMsg) {
             res.render('article/edit', {error: errorMsg})
         } else {
-            Article.findById(id).populate('category').then(article =>{
+            Article.findById(id).populate('category tags').then(article =>{
                 if (article.category.id !== articleArgs.category){
                     article.category.articles.remove(article.id);
                     article.category.save();
@@ -127,6 +128,19 @@ module.exports = {
                 article.category = articleArgs.category;
                 article.title = articleArgs.title;
                 article.content = articleArgs.content;
+
+                let newTagNames = articleArgs.tags.split(/\s|,/).filter(tag=>{return tag});
+
+                let oldTags = article.tags.filter(tag => {
+                    return newTagNames.indexOf(tag.name) === -1;
+                });
+
+                for(let tag of oldTags){
+                    tag.deleteArticle(article.id);
+                    article.deleteTag(tag.id);
+                }
+
+                InitializeTags(newTagNames, article.id);
 
                 article.save((err) => {
                     if(err) {
